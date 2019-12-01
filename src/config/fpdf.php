@@ -25,5 +25,6 @@ return [
     |
     */
     'useVaporHeaders'  => env('FPDF_VAPOR_HEADERS', false),
+    'fontPath'  => env('FPDF_FONTPATH', ''),
 
 ];

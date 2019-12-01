@@ -1,4 +1,4 @@
-<?php namespace Codedge\Fpdf\Fpdf;
+<?php namespace Mycools\Fpdf\Fpdf;
 /*******************************************************************************
 * FPDF                                                                         *
 *                                                                              *
@@ -71,7 +71,7 @@ protected $PDFVersion;         // PDF version number
 *                               Public methods                                 *
 *******************************************************************************/
 
-function __construct($orientation='P', $unit='mm', $size='A4')
+function __construct($orientation='P', $unit='mm', $size='A4',$fontpath = '')
 {
 	// Some checks
 	$this->_dochecks();
@@ -102,7 +102,9 @@ function __construct($orientation='P', $unit='mm', $size='A4')
 	$this->WithAlpha = false;
 	$this->ws = 0;
 	// Font path
-	if(defined('FPDF_FONTPATH'))
+	if($fontpath != ""){
+		$this->fontpath = $fontpath;
+	}else if(defined('FPDF_FONTPATH'))
 	{
 		$this->fontpath = FPDF_FONTPATH;
 		if(substr($this->fontpath,-1)!='/' && substr($this->fontpath,-1)!='\\')
