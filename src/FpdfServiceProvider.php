@@ -46,7 +46,7 @@ class FpdfServiceProvider extends ServiceProvider
         $this->app->singleton('fpdf', function()
         {
             return new Fpdf\Fpdf(
-                config('fpdf.orientation'), config('fpdf.unit'), config('fpdf.size')
+                config('fpdf.orientation'), config('fpdf.unit'), config('fpdf.size'), config('fpdf.fontpath')
             );
         });
     }
