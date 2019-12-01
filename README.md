@@ -88,3 +88,14 @@ Route::get('/', function (Mycools\Fpdf\Fpdf\Fpdf $fpdf) {
 ```dotenv
 FPDF_VAPOR_HEADERS=true
 ```
+
+## Barcode
+```php
+$pdf->EAN13(80,40,'123456789012');
+$pdf->UPC_A(80,40,'123456789012');
+$pdf->Code39(80,40,'CODE 39',1,10);
+$pdf->Code128(50,20,'CODE 128',80,20);
+$pdf->i25(90,40,'12345678');
+$pdf->Codabar(75,40,'123456789');
+$pdf->POSTNETBarCode(40,40,'48109-1109');
+```
