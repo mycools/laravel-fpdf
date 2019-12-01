@@ -133,8 +133,14 @@ class Fpdf
     else
       $this->Error('Incorrect unit: '.$unit);
     // Page sizes
-    $this->StdPageSizes = array('a3'=>array(841.89,1190.55), 'a4'=>array(595.28,841.89), 'a5'=>array(420.94,595.28),
-      'letter'=>array(612,792), 'legal'=>array(612,1008));
+    $this->StdPageSizes = array(
+      'a3'=>array(841.89,1190.55), 
+      'a4'=>array(595.28,841.89), 
+      'a5'=>array(420.94,595.28),
+      'letter'=>array(612,792), 
+      'legal'=>array(612,1008),
+      'envelope'=>array(657.01,306),
+    );
     $size = $this->_getpagesize($size);
     $this->DefPageSize = $size;
     $this->CurPageSize = $size;
