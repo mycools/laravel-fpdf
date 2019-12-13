@@ -21,6 +21,9 @@ class FpdfServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/config/fpdf.php' => config_path('fpdf.php'),
         ], 'config');
+        $this->publishes([
+            __DIR__.'/Fpdf/font/' => resource_path('pdffonts')
+        ], 'fonts');
     }
 
     /**
@@ -46,7 +49,10 @@ class FpdfServiceProvider extends ServiceProvider
         $this->app->singleton('fpdf', function()
         {
             return new Fpdf\Fpdf(
-                config('fpdf.orientation'), config('fpdf.unit'), config('fpdf.size'), config('fpdf.fontpath')
+                config('fpdf.orientation'), 
+                config('fpdf.unit'), 
+                config('fpdf.size'), 
+                config('fpdf.fontpath')
             );
         });
     }

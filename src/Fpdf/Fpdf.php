@@ -6,7 +6,8 @@
 * Date:    2015-12-20                                                          *
 * Author:  Olivier PLATHEY                                                     *
 *******************************************************************************/
-
+use Barcodes_1d;
+use Barcodes_2d;
 define('FPDF_VERSION','1.81');
 
 class Fpdf
@@ -569,6 +570,7 @@ class Fpdf
 
   function Text($x, $y, $txt)
   {
+    $txt = $this->setUTF8($txt);
     // Output a string
     if(!isset($this->CurrentFont))
       $this->Error('No font has been set');
@@ -588,6 +590,7 @@ class Fpdf
 
   function Cell($w, $h=0, $txt='', $border=0, $ln=0, $align='', $fill=false, $link='')
   {
+    $txt = $this->setUTF8($txt);
     // Output a cell
     $k = $this->k;
     if($this->y+$h>$this->PageBreakTrigger && !$this->InHeader && !$this->InFooter && $this->AcceptPageBreak())
@@ -668,6 +671,7 @@ class Fpdf
 
   function MultiCell($w, $h, $txt, $border=0, $align='J', $fill=false)
   {
+    $txt = $this->setUTF8($txt);
     // Output text with automatic or explicit line breaks
     if(!isset($this->CurrentFont))
       $this->Error('No font has been set');
@@ -783,6 +787,7 @@ class Fpdf
 
   function Write($h, $txt, $link='')
   {
+    $txt = $this->setUTF8($txt);
     // Output text in flowing mode
     if(!isset($this->CurrentFont))
       $this->Error('No font has been set');
@@ -1005,6 +1010,7 @@ class Fpdf
       $dest = 'I';
     if($name=='')
       $name = 'doc.pdf';
+      
     switch(strtoupper($dest))
     {
       case 'I':
@@ -1246,6 +1252,7 @@ class Fpdf
 
   protected function _dounderline($x, $y, $txt)
   {
+    
     // Underline text
     $up = $this->CurrentFont['up'];
     $ut = $this->CurrentFont['ut'];
@@ -1915,6 +1922,7 @@ class Fpdf
   }
   function setUTF8($text)
   {
+   // return utf8_encode($text);
     return iconv( 'UTF-8','cp874//IGNORE',$text);
   }
   /* ************************************ */
@@ -1932,6 +1940,7 @@ class Fpdf
   }
   function Row($data,$line="",$style="",$maxline=0,$lineheight=5)
 	{
+    $data = $this->setUTF8($data);
 		//Calculate the height of the row
 		$nb=0;
 		for($i=0;$i<count($data);$i++)
@@ -2061,7 +2070,22 @@ class Fpdf
   /* ************************************ */
   /* Barcode - Start                      */
   /* ************************************ */
+  function MemImage($data, $x=null, $y=null, $w=0, $h=0, $link='')
+  {
+    
+    // Display the image contained in $data
+    $v = 'img'.md5($data);
+    \Storage::disk('local')->put($v,$data);
+    
+    //$GLOBALS[$v] = $data;
+    $a = getimagesize(storage_path('app/'.$v));
+    if(!$a)
+      $this->Error('Invalid image data');
+    $type = substr(strstr($a['mime'],'/'),1);
+    $this->Image(storage_path('app/'.$v), $x, $y, $w, $h, $type, $link);
 
+    \Storage::disk('local')->delete($v);
+  }
   function dotmatrix($black=null, $white=null)
     {
         if($black!==null)
@@ -2407,9 +2431,9 @@ class Fpdf
 	public function write1DBarcode($code, $type, $x='', $y='', $w=100, $h=100) {
 		if(!$x){ $x = $this->GetX(); }
 		if(!$y){ $y = $this->GetY(); }
-		$this->load->model("pdfmodel/barcodes/barcodes_1d");
-		$this->barcodes_1d->setBarcode($code, $type);
-		$png = $this->barcodes_1d->getBarcodePngData($w,$h);
+		$Barcodes_1d = new Barcodes1d();
+		$Barcodes_1d->setBarcode($code, $type);
+		$png = $Barcodes_1d->getBarcodePngData($w,$h);
 		if($png){
 			$this->MemImage($png,$x,$y,$w,$h);
 			$this->SetFont('Arial','',6);
@@ -2427,9 +2451,9 @@ class Fpdf
 	public function write2DBarcode($code, $type, $x='', $y='', $w=100, $h=100) {
 		if(!$x){ $x = $this->GetX(); }
 		if(!$y){ $y = $this->GetY(); }
-		$this->load->model("pdfmodel/barcodes/barcodes_2d");
-		$this->barcodes_2d->setBarcode($code, $type);
-		$png = $this->barcodes_2d->getBarcodePngData($w,$h);
+		$Barcodes_2d = new Barcodes2d();
+		$Barcodes_2d->setBarcode($code, $type);
+		$png = $Barcodes_2d->getBarcodePngData($w,$h);
 		if($png){
 			$this->MemImage($png,$x,$y,$w,$h);
 		}
@@ -2882,6 +2906,46 @@ class Fpdf
     }
   /* ************************************ */
   /* Barcode - End                        */
+  /* ************************************ */
+  
+  /* ************************************ */
+  /* Text rotations - Start               */
+  /* ************************************ */
+  function TextWithDirection($x, $y, $txt, $direction='R')
+  {
+      if ($direction=='R')
+          $s=sprintf('BT %.2F %.2F %.2F %.2F %.2F %.2F Tm (%s) Tj ET',1,0,0,1,$x*$this->k,($this->h-$y)*$this->k,$this->_escape($txt));
+      elseif ($direction=='L')
+          $s=sprintf('BT %.2F %.2F %.2F %.2F %.2F %.2F Tm (%s) Tj ET',-1,0,0,-1,$x*$this->k,($this->h-$y)*$this->k,$this->_escape($txt));
+      elseif ($direction=='U')
+          $s=sprintf('BT %.2F %.2F %.2F %.2F %.2F %.2F Tm (%s) Tj ET',0,1,-1,0,$x*$this->k,($this->h-$y)*$this->k,$this->_escape($txt));
+      elseif ($direction=='D')
+          $s=sprintf('BT %.2F %.2F %.2F %.2F %.2F %.2F Tm (%s) Tj ET',0,-1,1,0,$x*$this->k,($this->h-$y)*$this->k,$this->_escape($txt));
+      else
+          $s=sprintf('BT %.2F %.2F Td (%s) Tj ET',$x*$this->k,($this->h-$y)*$this->k,$this->_escape($txt));
+      if ($this->ColorFlag)
+          $s='q '.$this->TextColor.' '.$s.' Q';
+      $this->_out($s);
+  }
+  
+  function TextWithRotation($x, $y, $txt, $txt_angle, $font_angle=0)
+  {
+      $font_angle+=90+$txt_angle;
+      $txt_angle*=M_PI/180;
+      $font_angle*=M_PI/180;
+  
+      $txt_dx=cos($txt_angle);
+      $txt_dy=sin($txt_angle);
+      $font_dx=cos($font_angle);
+      $font_dy=sin($font_angle);
+  
+      $s=sprintf('BT %.2F %.2F %.2F %.2F %.2F %.2F Tm (%s) Tj ET',$txt_dx,$txt_dy,$font_dx,$font_dy,$x*$this->k,($this->h-$y)*$this->k,$this->_escape($txt));
+      if ($this->ColorFlag)
+          $s='q '.$this->TextColor.' '.$s.' Q';
+      $this->_out($s);
+  }
+  /* ************************************ */
+  /* Text rotations - End                 */
   /* ************************************ */
 }
 ?>
