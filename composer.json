@@ -13,13 +13,14 @@
   },
   "authors": [
     {
-      "name": "Holger Lösken",
-      "email": "holger.loesken@codedge.de"
-    },
-    {
       "name": "Jarak Kritkiattisak",
       "email": "jarak.krit@gmail.com"
+    },
+    {
+      "name": "Holger Lösken",
+      "email": "holger.loesken@codedge.de"
     }
+
   ],
   "extra": {
     "laravel": {
