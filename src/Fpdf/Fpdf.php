@@ -1172,10 +1172,10 @@ class Fpdf
     // Load a font definition file from the font directory
     if(strpos($font,'/')!==false || strpos($font,"\\")!==false)
       $this->Error('Incorrect font definition file name: '.$font);
-    if(file_exists(dirname(__FILE__).'/font/'.$font)){
-      include(dirname(__FILE__).'/font/'.$font);
-    }else{
+    if(file_exists($this->fontpath.$font)){
       include($this->fontpath.$font);
+    }else{
+      include(dirname(__FILE__).'/font/'.$font);
     }
     if(!isset($name))
       $this->Error('Could not include font definition file');
