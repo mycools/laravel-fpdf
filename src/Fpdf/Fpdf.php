@@ -519,9 +519,10 @@ class Fpdf
         $fontkey = $family.$style;
         if(!isset($this->fonts[$fontkey]))
           $this->AddFont($family,$style);
+      }else{
+	$this->AddFont($family,$style);
+        //$this->Error('Undefined font: '.$family.' '.$style);
       }
-      else
-        $this->Error('Undefined font: '.$family.' '.$style);
     }
     // Select it
     $this->FontFamily = $family;
