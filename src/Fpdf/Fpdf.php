@@ -1019,27 +1019,34 @@ class Fpdf
         if(PHP_SAPI!='cli')
         {
           // We send to a browser
-          header('Content-Type: application/pdf');
-          header('Content-Disposition: inline; '.$this->_httpencode('filename',$name,$isUTF8));
-          header('Cache-Control: private, max-age=0, must-revalidate');
-          header('Pragma: public');
+          $headers = [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; '.$this->_httpencode('filename',$name,$isUTF8),
+            'Cache-Control' => 'private, max-age=0, must-revalidate',
+            'Pragma' => 'public'
+          ];
           if (config('fpdf.useVaporHeaders')) {
-            header('X-Vapor-Base64-Encode: True');
+            $headers['X-Vapor-Base64-Encode'] = 'True';
           }
+          return response($this->buffer)
+                ->withHeaders($headers);
         }
         echo $this->buffer;
         break;
       case 'D':
         // Download file
         $this->_checkoutput();
-        header('Content-Type: application/x-download');
-        header('Content-Disposition: attachment; '.$this->_httpencode('filename',$name,$isUTF8));
-        header('Cache-Control: private, max-age=0, must-revalidate');
-        header('Pragma: public');
+        $headers = [
+          'Content-Type' => 'application/x-download',
+          'Content-Disposition' => 'attachment; '.$this->_httpencode('filename',$name,$isUTF8),
+          'Cache-Control' => 'private, max-age=0, must-revalidate',
+          'Pragma' => 'public'
+        ];
         if (config('fpdf.useVaporHeaders')) {
-          header('X-Vapor-Base64-Encode: True');
+          $headers['X-Vapor-Base64-Encode'] = 'True';
         }
-        echo $this->buffer;
+        return response($this->buffer)
+              ->withHeaders($headers);
         break;
       case 'F':
         // Save to local file
@@ -1165,7 +1172,11 @@ class Fpdf
     // Load a font definition file from the font directory
     if(strpos($font,'/')!==false || strpos($font,"\\")!==false)
       $this->Error('Incorrect font definition file name: '.$font);
-    include($this->fontpath.$font);
+    if(file_exists(dirname(__FILE__).'/font/'.$font)){
+      include(dirname(__FILE__).'/font/'.$font);
+    }else{
+      include($this->fontpath.$font);
+    }
     if(!isset($name))
       $this->Error('Could not include font definition file');
     if(isset($enc))
